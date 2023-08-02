@@ -1,0 +1,18 @@
+{
+  "name": "plugin_active_win",
+  "version": "1.0.0",
+  "description": "Active Window",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "active-win": "^8.1.0",
+    "archiver": "^5.3.1"
+  },
+  "grid_editor": {
+    "preference": "preference.html"
+  }
+}
