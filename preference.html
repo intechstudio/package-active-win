@@ -105,10 +105,10 @@
         pageActivator2.value = data.pageActivatorCriteria2
         pageActivator3.value = data.pageActivatorCriteria3
       } else if (data.type === "active-info") {
-		const editorNames = ["Electron"]
-		if (!editorNames.includes(data.owner.name)){
-			activeWindow.innerText = data.owner.name
-		}
+        const editorNames = ["Electron", "Grid Editor (Nightly)", "Grid Editor"]
+        if (!editorNames.includes(data.owner.name)){
+          activeWindow.innerText = data.owner.name
+        }
         //activeTitle.innerText = data.title
       }
     }
