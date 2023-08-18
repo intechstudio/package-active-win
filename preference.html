@@ -1,10 +1,143 @@
-<div class="p-4 bg-secondary rounded-lg flex flex-col mb-4">
-  <div class="flex flex-col">
-    <div class="pb-2">Page Activator</div>
-    <div class="flex py-2 text-white items-center">
-      <div class="mx-1">Poll interval</div>
+<script>
+  {
+    const intervalSlider = document.getElementById("interval-slider");
+    const intervalText = document.getElementById("interval-text");
+    const activeWindow = document.getElementById("active-window");
+    //const activeTitle = document.getElementById("active-title")
+    const pageActivator0 = document.getElementById("page-activator-criteria-0");
+    const pageActivator1 = document.getElementById("page-activator-criteria-1");
+    const pageActivator2 = document.getElementById("page-activator-criteria-2");
+    const pageActivator3 = document.getElementById("page-activator-criteria-3");
+    const applyButton0 = document.getElementById("button-apply-0");
+    const applyButton1 = document.getElementById("button-apply-1");
+    const applyButton2 = document.getElementById("button-apply-2");
+    const applyButton3 = document.getElementById("button-apply-3");
+    const regExCheckbox = document.getElementById("regex-checkbox");
+    const defaultPageSelector = document.getElementById("default-page");
+
+    const messagePort = createPluginMessagePort("plugin-active-win");
+    messagePort.onmessage = (e) => {
+      const data = e.data;
+      console.log(data);
+      if (data.type === "configuration") {
+        intervalSlider.value = data.interval;
+        intervalText.innerText = data.interval;
+        pageActivator0.value = data.pageActivatorCriteria0;
+        pageActivator1.value = data.pageActivatorCriteria1;
+        pageActivator2.value = data.pageActivatorCriteria2;
+        pageActivator3.value = data.pageActivatorCriteria3;
+        regExCheckbox.checked = data.regExChecked;
+      } else if (data.type === "active-info") {
+        const editorNames = [
+          "Electron",
+          "Grid Editor (Nightly)",
+          "Grid Editor",
+        ];
+        if (!editorNames.includes(data.owner.name)) {
+          activeWindow.innerText = data.owner.name;
+        }
+        //activeTitle.innerText = data.title
+      }
+    };
+    messagePort.start();
+    messagePort.postMessage({
+      type: "request-configuration",
+    });
+
+    function updateConfiguration(e) {
+      const interval = Math.round(intervalSlider.value);
+      intervalText.innerText = interval;
+      console.log(regExChecked);
+      messagePort.postMessage({
+        type: "save-configuration",
+        interval,
+        pageActivatorCriteria0: pageActivator0.value,
+        pageActivatorCriteria1: pageActivator1.value,
+        pageActivatorCriteria2: pageActivator2.value,
+        pageActivatorCriteria3: pageActivator3.value,
+        useRegEx: regExChecked,
+      });
+    }
+    intervalSlider.addEventListener("change", updateConfiguration);
+    pageActivator0.addEventListener("change", updateConfiguration);
+    pageActivator1.addEventListener("change", updateConfiguration);
+    pageActivator2.addEventListener("change", updateConfiguration);
+    pageActivator3.addEventListener("change", updateConfiguration);
+    pageActivator0.addEventListener("keydown", handleActivatorKeyDown);
+    pageActivator1.addEventListener("keydown", handleActivatorKeyDown);
+    pageActivator2.addEventListener("keydown", handleActivatorKeyDown);
+    pageActivator3.addEventListener("keydown", handleActivatorKeyDown);
+    regExCheckbox.addEventListener("change", handleRegexChecked);
+    defaultPageSelector.addEventListener("change", handleDefaultPageChange);
+
+    function handleDefaultPageChange(e) {
+      console.log(defaultPageSelector.value);
+    }
+
+    function handleActivatorKeyDown(e) {
+      if (!regExChecked) {
+        return;
+      }
+
+      const senderId = e.srcElement.getAttribute("id");
+      if (typeof senderId === "undefined") {
+        throw "Sender ID is undefined";
+      }
+
+      const element = document.getElementById(senderId);
+      if (isValidRegex(element.value)) {
+        console.log("error");
+        element.classList.add("border-error border");
+      } else {
+        console.log("no error");
+        element.classList.remove("border-error border");
+      }
+    }
+
+    let regExChecked = false;
+    function handleRegexChecked(e) {
+      console.log(regExCheckbox);
+      regExChecked = regExCheckbox.checked;
+      updateConfiguration();
+    }
+
+    function isValidRegex(regexString) {
+      try {
+        new RegExp(regexString);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    applyButton0.onclick = function () {
+      pageActivator0.value = activeWindow.innerText;
+      updateConfiguration();
+    };
+    applyButton1.onclick = function () {
+      pageActivator1.value = activeWindow.innerText;
+      updateConfiguration();
+    };
+    applyButton2.onclick = function () {
+      pageActivator2.value = activeWindow.innerText;
+      updateConfiguration();
+    };
+    applyButton3.onclick = function () {
+      pageActivator3.value = activeWindow.innerText;
+      updateConfiguration();
+    };
+  }
+</script>
+
+<div class="p-4 bg-secondary rounded-lg flex flex-col">
+  <div class="font-bold w-full border-b border-white pb-2 mb-2">
+    Active Window Plugin
+  </div>
+  <div class="flex flex-col gap-2">
+    <div class="flex flex-row gap-2 w-full text-white items-center">
+      <span>Poll interval</span>
       <input
-        class="bg-primary m-1"
+        class="flex flex-grow bg-primary"
         type="range"
         min="200"
         max="2000"
@@ -12,14 +145,15 @@
         value="1000"
         id="interval-slider"
       />
-      <div class="mx-1">
-        <div id="interval-text">1000</div> ms
+      <div>
+        <span id="interval-text">1000</span>
+        ms
       </div>
     </div>
 
-    <div class="text-gray-400 py-1 mt-1 text-sm">
+    <div class="flex flex-row text-gray-400 text-sm gap-2">
       <b>Active window:</b>
-      <div id="active-window"> N/A </div>
+      <div id="active-window">N/A</div>
     </div>
 
     <!--<div class="text-gray-400 py-1 mt-1 text-sm">
@@ -27,129 +161,105 @@
       <div id="active-title"> N/A </div>
     </div>-->
 
-	<div class="flex py-2 text-white items-center">
-		<input
-		  type="text"
-		  placeholder="Page 1 trigger application"
-		  class="bg-primary my-1"
-		  id="page-activator-criteria-0"
-		/>
-		<button
-			id="button-apply-0" class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 py-0.5 mr-2">
-			Apply
-		</button>
-	</div>
-	<div class="flex py-2 text-white items-center">
-		<input
-		  type="text"
-		  placeholder="Page 2 trigger application"
-		  class="bg-primary my-1"
-		  id="page-activator-criteria-1"
-		/>
-		<button 
-			id="button-apply-1" class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 py-0.5 mr-2">
-			Apply
-		</button>
-	</div>
-	<div class="flex py-2 text-white items-center">
-		<input
-		  type="text"
-		  placeholder="Page 3 trigger application"
-		  class="bg-primary my-1"
-		  id="page-activator-criteria-2"
-		/>
-		<button 
-			id="button-apply-2" class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 py-0.5 mr-2">
-			Apply
-		</button>
-	</div>
-	<div class="flex py-2 text-white items-center">
-		<input
-		  type="text"
-		  placeholder="Page 4 trigger application"
-		  class="bg-primary my-1"
-		  id="page-activator-criteria-3"
-		/>
-		<button 
-			id="button-apply-3" class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 py-0.5 mr-2">
-			Apply
-		</button>
-	</div>
+    <div class="flex flex-col w-full gap-2">
+      <div class="flex flex-col">
+        <div class="flex flex-row gap-2 text-white">
+          <input
+            type="text"
+            placeholder="Page 1 trigger application"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2"
+            id="page-activator-criteria-0"
+          />
+          <button
+            id="button-apply-0"
+            class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 p-1"
+          >
+            Apply
+          </button>
+        </div>
+        <span id="input-error-1" class="text-sm ml-2"></span>
+      </div>
+      <div class="flex flex-col">
+        <div class="flex flex-row gap-2 text-white">
+          <input
+            type="text"
+            placeholder="Page 2 trigger application"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2"
+            id="page-activator-criteria-1"
+          />
+          <button
+            id="button-apply-1"
+            class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 p-1"
+          >
+            Apply
+          </button>
+        </div>
+        <span id="input-error-2" class="text-sm ml-2"></span>
+      </div>
+      <div class="flex flex-col">
+        <div class="flex flex-row gap-2 text-white">
+          <input
+            type="text"
+            placeholder="Page 3 trigger application"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2"
+            id="page-activator-criteria-2"
+          />
+          <button
+            id="button-apply-2"
+            class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 p-1"
+          >
+            Apply
+          </button>
+        </div>
+        <span id="input-error-3" class="text-sm ml-2"></span>
+      </div>
+      <div class="flex flex-col">
+        <div class="flex flex-row gap-2 text-white">
+          <input
+            type="text"
+            placeholder="Page 4 trigger application"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2"
+            id="page-activator-criteria-3"
+          />
+          <button
+            id="button-apply-3"
+            class="flex items-center justify-center rounded focus:outline-none border-2 border-select bg-select hover:bg-select-saturate-10 hover:border-select-saturate-10 text-white px-2 p-1"
+          >
+            Apply
+          </button>
+        </div>
+        <span id="input-error-4" class="text-sm ml-2"></span>
+      </div>
+      <div class="flex flew-row gap-2">
+        <input type="checkbox" id="regex-checkbox" />
+        <label for="scales">Use Regular Expressions</label>
+      </div>
+      <div class="grid grid-cols-1 gap-2">
+        <div class="flex flex-row gap-2">
+          <span>Default Page:</span>
+          <select
+            id="default-page"
+            class="bg-primary flex flex-grow truncate focus:outline-none"
+          >
+            <option value="0">Do not change page</option>
+            <option value="1">Page 1</option>
+            <option value="2">Page 2</option>
+            <option value="3">Page 3</option>
+            <option value="4">Page 4</option>
+          </select>
+        </div>
+
+        <span class="text-sm text-gray-400"
+          >NOTE: When no match is found for active window, the page defined by
+          the default behviour will be selected</span
+        >
+      </div>
+    </div>
   </div>
 </div>
-<script>
-  {
-    const intervalSlider = document.getElementById("interval-slider")
-    const intervalText = document.getElementById("interval-text")
-    const activeWindow = document.getElementById("active-window")
-    //const activeTitle = document.getElementById("active-title")
-    const pageActivator0 = document.getElementById("page-activator-criteria-0")
-    const pageActivator1 = document.getElementById("page-activator-criteria-1")
-    const pageActivator2 = document.getElementById("page-activator-criteria-2")
-    const pageActivator3 = document.getElementById("page-activator-criteria-3")
-    const applyButton0 = document.getElementById("button-apply-0")
-    const applyButton1 = document.getElementById("button-apply-1")
-    const applyButton2 = document.getElementById("button-apply-2")
-    const applyButton3 = document.getElementById("button-apply-3")
 
-
-    const messagePort = createPluginMessagePort('plugin-active-win')
-    messagePort.onmessage = (e) => {
-      const data = e.data
-      console.log(data)
-      if (data.type === "configuration"){
-        intervalSlider.value = data.interval
-        intervalText.innerText = data.interval
-        pageActivator0.value = data.pageActivatorCriteria0
-        pageActivator1.value = data.pageActivatorCriteria1
-        pageActivator2.value = data.pageActivatorCriteria2
-        pageActivator3.value = data.pageActivatorCriteria3
-      } else if (data.type === "active-info") {
-        const editorNames = ["Electron", "Grid Editor (Nightly)", "Grid Editor"]
-        if (!editorNames.includes(data.owner.name)){
-          activeWindow.innerText = data.owner.name
-        }
-        //activeTitle.innerText = data.title
-      }
-    }
-    messagePort.start()
-    messagePort.postMessage({
-      type: "request-configuration"
-    })
-
-    function updateConfiguration() {
-      const interval = Math.round(intervalSlider.value) 
-      intervalText.innerText = interval
-      messagePort.postMessage({
-        type: "save-configuration",
-        interval,
-        pageActivatorCriteria0: pageActivator0.value,
-        pageActivatorCriteria1: pageActivator1.value,
-        pageActivatorCriteria2: pageActivator2.value,
-        pageActivatorCriteria3: pageActivator3.value
-      })
-    }
-    intervalSlider.addEventListener("change", updateConfiguration)
-    pageActivator0.addEventListener("change", updateConfiguration)
-    pageActivator1.addEventListener("change", updateConfiguration)
-    pageActivator2.addEventListener("change", updateConfiguration)
-    pageActivator3.addEventListener("change", updateConfiguration)
-	
-	applyButton0.onclick = function(){
-		pageActivator0.value = activeWindow.innerText
-                updateConfiguration()
-	}
-	applyButton1.onclick = function(){
-		pageActivator1.value = activeWindow.innerText
-                updateConfiguration()
-	}
-	applyButton2.onclick = function(){
-		pageActivator2.value = activeWindow.innerText
-                updateConfiguration()
-	}
-	applyButton3.onclick = function(){
-		pageActivator3.value = activeWindow.innerText
-                updateConfiguration()
-	}
+<style>
+  .test {
+    background-color: red;
   }
-</script>
+</style>
