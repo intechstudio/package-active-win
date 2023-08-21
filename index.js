@@ -6,6 +6,7 @@ let pageActivatorCriteria1 = "";
 let pageActivatorCriteria2 = "";
 let pageActivatorCriteria3 = "";
 let useRegEx = false;
+let defaultPage = -1;
 let lastPageActivator = "";
 let isEnabled = false;
 let currentTimeoutId = undefined;
@@ -20,6 +21,9 @@ exports.loadPlugin = async function (gridController, persistedData) {
   pageActivatorCriteria1 = persistedData?.pageActivatorCriteria1 ?? "";
   pageActivatorCriteria2 = persistedData?.pageActivatorCriteria2 ?? "";
   pageActivatorCriteria3 = persistedData?.pageActivatorCriteria3 ?? "";
+  useRegEx = persistedData?.useRegEx ?? false;
+  defaultPage = persistedData?.defaultPage ?? -1;
+
   isEnabled = true;
   runLoop();
 
@@ -54,11 +58,11 @@ async function onMessage(port, data) {
       pageActivatorCriteria1,
       pageActivatorCriteria2,
       pageActivatorCriteria3,
-      regExChecked: useRegEx,
+      useRegEx,
+      defaultPage,
     });
   } else if (data.type === "save-configuration") {
     cancelLoop();
-    console.log("yay incoming data:", data);
 
     interval = data.interval ?? interval;
     pageActivatorCriteria0 =
@@ -70,8 +74,8 @@ async function onMessage(port, data) {
     pageActivatorCriteria3 =
       data.pageActivatorCriteria3 ?? pageActivatorCriteria3;
     useRegEx = data.useRegEx ?? useRegEx;
+    defaultPage = data.defaultPage ?? defaultPage;
     isEnabled = true;
-    console.log("test:", data.useRegEx, useRegEx);
 
     const payload = {
       interval,
@@ -79,10 +83,9 @@ async function onMessage(port, data) {
       pageActivatorCriteria1,
       pageActivatorCriteria2,
       pageActivatorCriteria3,
-      useRegex: useRegEx,
+      useRegEx: useRegEx,
+      defaultPage: defaultPage,
     };
-
-    console.log("payload:", payload);
 
     controller.sendMessageToRuntime({
       id: "persist-data",
@@ -112,6 +115,7 @@ async function checkActiveWindow() {
     if (lastPageActivator === result.owner.name) {
       return;
     }
+    lastPageActivator = result.owner.name;
 
     let criteria = [
       pageActivatorCriteria0,
@@ -120,31 +124,30 @@ async function checkActiveWindow() {
       pageActivatorCriteria3,
     ];
 
+    let page = undefined;
     for (let i = 0; i < 4; i++) {
-      if (criteria[i] === result.owner.name) {
-        lastPageActivator = result.owner.name;
-
-        controller.sendMessageToRuntime({
-          id: "change-page",
-          num: i,
-        });
-        for (const port of messagePorts) {
-          port.postMessage({
-            type: "active-info",
-            owner: result.owner,
-            title: result.title,
-          });
-        }
-        return;
+      if (criteria[i].length === 0) {
+        continue;
+      }
+      const regex = new RegExp(criteria[i]);
+      const match = criteria[i] === result.owner.name;
+      const regexMatch = regex.test(result.owner.name);
+      if ((!useRegEx && match) || (useRegEx && regexMatch)) {
+        page = i;
+        break;
       }
     }
 
-    // default to page 0 if not found
-    lastPageActivator = result.owner.name;
-    controller.sendMessageToRuntime({
-      id: "change-page",
-      num: 0,
-    });
+    if (typeof page === "undefined" && defaultPage !== -1) {
+      page = defaultPage;
+    }
+
+    if (typeof page !== "undefined") {
+      controller.sendMessageToRuntime({
+        id: "change-page",
+        num: page,
+      });
+    }
 
     for (const port of messagePorts) {
       port.postMessage({
@@ -154,6 +157,7 @@ async function checkActiveWindow() {
       });
     }
   } catch (e) {
+    console.error("error:", e);
     controller.sendMessageToRuntime({
       error: e.message,
     });
