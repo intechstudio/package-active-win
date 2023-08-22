@@ -129,19 +129,28 @@ async function checkActiveWindow() {
       if (criteria[i].length === 0) {
         continue;
       }
-      try {
-        const regex = new RegExp(criteria[i]);
-        const match = criteria[i] === result.owner.name;
-        const regexMatch = regex.test(result.owner.name);
-        if ((!useRegEx && match) || (useRegEx && regexMatch)) {
-          page = i;
-          break;
+
+      let matchFound = false;
+      if (useRegEx) {
+        try {
+          const regex = new RegExp(criteria[i]);
+          const regexMatch = regex.test(result.owner.name);
+          matchFound = regexMatch;
+        } catch (e) {
+          continue; //Regex syntax error in criteria[i], skip
         }
-      } catch (e) {
-        continue;
+      } else {
+        const normalMatch = criteria[i] === result.owner.name;
+        matchFound = normalMatch;
+      }
+
+      if (matchFound) {
+        page = i;
+        break;
       }
     }
 
+    //Fallback logic when no suitable match is found
     if (typeof page === "undefined" && defaultPage !== -1) {
       page = defaultPage;
     }
