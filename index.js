@@ -129,12 +129,16 @@ async function checkActiveWindow() {
       if (criteria[i].length === 0) {
         continue;
       }
-      const regex = new RegExp(criteria[i]);
-      const match = criteria[i] === result.owner.name;
-      const regexMatch = regex.test(result.owner.name);
-      if ((!useRegEx && match) || (useRegEx && regexMatch)) {
-        page = i;
-        break;
+      try {
+        const regex = new RegExp(criteria[i]);
+        const match = criteria[i] === result.owner.name;
+        const regexMatch = regex.test(result.owner.name);
+        if ((!useRegEx && match) || (useRegEx && regexMatch)) {
+          page = i;
+          break;
+        }
+      } catch (e) {
+        continue;
       }
     }
 

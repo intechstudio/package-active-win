@@ -126,6 +126,24 @@
 
     function handleRegexChecked(e) {
       updateConfiguration();
+      const errorClasses = ["border-error", "error"];
+      if (regExCheckbox.checked) {
+        checkRegExSyntax(pageActivator0);
+        checkRegExSyntax(pageActivator1);
+        checkRegExSyntax(pageActivator2);
+        checkRegExSyntax(pageActivator3);
+      } else {
+        pageActivator0.classList.remove(...errorClasses);
+        pageActivator0.classList.add("border-transparent");
+        pageActivator1.classList.remove(...errorClasses);
+        pageActivator1.classList.add("border-transparent");
+        pageActivator2.classList.remove(...errorClasses);
+        pageActivator2.classList.add("border-transparent");
+        pageActivator3.classList.remove(...errorClasses);
+        pageActivator3.classList.add("border-transparent");
+        errorLabel.classList.add("hidden");
+        noteLabel.classList.remove("hidden");
+      }
     }
 
     function isValidRegex(regexString) {
@@ -195,7 +213,7 @@
           <input
             type="text"
             placeholder="Page 1 trigger application"
-            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border border-transparent"
             id="page-activator-criteria-0"
           />
           <button
@@ -212,7 +230,7 @@
           <input
             type="text"
             placeholder="Page 2 trigger application"
-            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border border-transparent"
             id="page-activator-criteria-1"
           />
           <button
@@ -229,7 +247,7 @@
           <input
             type="text"
             placeholder="Page 3 trigger application"
-            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border border-transparent"
             id="page-activator-criteria-2"
           />
           <button
@@ -246,7 +264,7 @@
           <input
             type="text"
             placeholder="Page 4 trigger application"
-            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border"
+            class="flex flex-grow h-auto bg-primary focus:outline-none py-1 px-2 border border-transparent"
             id="page-activator-criteria-3"
           />
           <button
@@ -280,7 +298,7 @@
           >NOTE: When no match is found for active window, the page defined by
           the default behviour will be selected</span
         >
-        <span id="error-label" class="text-sm text-error"
+        <span id="error-label" class="text-sm text-error hidden"
           >ERROR: Invalid regular expression syntax!
         </span>
       </div>
