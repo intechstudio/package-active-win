@@ -14,12 +14,13 @@
     const applyButton3 = document.getElementById("button-apply-3");
     const regExCheckbox = document.getElementById("regex-checkbox");
     const defaultPageSelector = document.getElementById("default-page");
+    const errorLabel = document.getElementById("error-label");
+    const noteLabel = document.getElementById("note-label");
 
     const messagePort = createPluginMessagePort("plugin-active-win");
     messagePort.onmessage = (e) => {
       const data = e.data;
       if (data.type === "configuration") {
-        console.log(data);
         intervalSlider.value = data.interval;
         intervalText.innerText = data.interval;
         pageActivator0.value = data.pageActivatorCriteria0;
@@ -97,13 +98,29 @@
     }
 
     function checkRegExSyntax(element) {
-      const errorClasses = ["border-error"];
+      const errorClasses = ["border-error", "error"];
       if (!isValidRegex(element.value)) {
         element.classList.remove("border-transparent");
         element.classList.add(...errorClasses);
+        errorLabel.classList.remove("hidden");
+        noteLabel.classList.add("hidden");
       } else {
         element.classList.remove(...errorClasses);
         element.classList.add("border-transparent");
+
+        const activators = [
+          pageActivator0,
+          pageActivator1,
+          pageActivator2,
+          pageActivator3,
+        ];
+        const isError = activators
+          .map((e) => e.classList.contains("error"))
+          .includes(true);
+        if (!isError) {
+          errorLabel.classList.add("hidden");
+          noteLabel.classList.remove("hidden");
+        }
       }
     }
 
@@ -174,6 +191,7 @@
     <div class="flex flex-col w-full gap-2">
       <div class="flex flex-col">
         <div class="flex flex-row gap-2 text-white">
+          <span id="input-label-1" class="flex items-center">Page 1:</span>
           <input
             type="text"
             placeholder="Page 1 trigger application"
@@ -187,10 +205,10 @@
             Apply
           </button>
         </div>
-        <span id="input-error-1" class="text-sm ml-2"></span>
       </div>
       <div class="flex flex-col">
         <div class="flex flex-row gap-2 text-white">
+          <span id="input-label-2" class="flex items-center">Page 2:</span>
           <input
             type="text"
             placeholder="Page 2 trigger application"
@@ -204,10 +222,10 @@
             Apply
           </button>
         </div>
-        <span id="input-error-2" class="text-sm ml-2"></span>
       </div>
       <div class="flex flex-col">
         <div class="flex flex-row gap-2 text-white">
+          <span id="input-label-3" class="flex items-center">Page 3:</span>
           <input
             type="text"
             placeholder="Page 3 trigger application"
@@ -221,10 +239,10 @@
             Apply
           </button>
         </div>
-        <span id="input-error-3" class="text-sm ml-2"></span>
       </div>
       <div class="flex flex-col">
         <div class="flex flex-row gap-2 text-white">
+          <span id="input-label-4" class="flex items-center">Page 4:</span>
           <input
             type="text"
             placeholder="Page 4 trigger application"
@@ -238,7 +256,6 @@
             Apply
           </button>
         </div>
-        <span id="input-error-4" class="text-sm ml-2"></span>
       </div>
       <div class="flex flew-row gap-2">
         <input type="checkbox" id="regex-checkbox" />
@@ -259,17 +276,26 @@
           </select>
         </div>
 
-        <span class="text-sm text-gray-400"
+        <span id="note-label" class="text-sm text-gray-400"
           >NOTE: When no match is found for active window, the page defined by
           the default behviour will be selected</span
         >
+        <span id="error-label" class="text-sm text-error"
+          >ERROR: Invalid regular expression syntax!
+        </span>
       </div>
     </div>
   </div>
 </div>
 
 <style>
+  :root {
+    --error-color: rgb(239 68 68);
+  }
   .border-error {
-    border-color: rgb(239 68 68);
+    border-color: var(--error-color);
+  }
+  .text-error {
+    color: var(--error-color);
   }
 </style>
