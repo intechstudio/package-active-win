@@ -11,6 +11,7 @@ let lastPageActivator = "";
 let isEnabled = false;
 let currentTimeoutId = undefined;
 let controller = undefined;
+let listenOption = 0;
 
 let messagePorts = new Set();
 
@@ -23,6 +24,7 @@ exports.loadPlugin = async function (gridController, persistedData) {
   pageActivatorCriteria3 = persistedData?.pageActivatorCriteria3 ?? "";
   useRegEx = persistedData?.useRegEx ?? false;
   defaultPage = persistedData?.defaultPage ?? -1;
+  listenOption = persistedData?.listenOption ?? 0;
 
   isEnabled = true;
   runLoop();
@@ -60,6 +62,7 @@ async function onMessage(port, data) {
       pageActivatorCriteria3,
       useRegEx,
       defaultPage,
+      listenOption,
     });
   } else if (data.type === "save-configuration") {
     cancelLoop();
@@ -75,6 +78,7 @@ async function onMessage(port, data) {
       data.pageActivatorCriteria3 ?? pageActivatorCriteria3;
     useRegEx = data.useRegEx ?? useRegEx;
     defaultPage = data.defaultPage ?? defaultPage;
+    listenOption = data.listenOption ?? listenOption;
     isEnabled = true;
 
     const payload = {
@@ -85,6 +89,7 @@ async function onMessage(port, data) {
       pageActivatorCriteria3,
       useRegEx: useRegEx,
       defaultPage: defaultPage,
+      listenOption: listenOption,
     };
 
     controller.sendMessageToRuntime({
@@ -112,10 +117,14 @@ async function checkActiveWindow() {
       result = { owner: { name: "Unknown!" }, title: "Invalid title!" };
     }
 
-    if (lastPageActivator === result.owner.name) {
+    const [owner, title] = [result.owner.name, result.title];
+    const targetString = Number(listenOption) === 1 ? title : owner;
+
+    if (lastPageActivator === targetString) {
       return;
     }
-    lastPageActivator = result.owner.name;
+
+    lastPageActivator = targetString;
 
     let criteria = [
       pageActivatorCriteria0,
@@ -134,13 +143,13 @@ async function checkActiveWindow() {
       if (useRegEx) {
         try {
           const regex = new RegExp(criteria[i]);
-          const regexMatch = regex.test(result.owner.name);
+          const regexMatch = regex.test(targetString);
           matchFound = regexMatch;
         } catch (e) {
           continue; //Regex syntax error in criteria[i], skip
         }
       } else {
-        const normalMatch = criteria[i] === result.owner.name;
+        const normalMatch = criteria[i] === targetString;
         matchFound = normalMatch;
       }
 
@@ -165,8 +174,7 @@ async function checkActiveWindow() {
     for (const port of messagePorts) {
       port.postMessage({
         type: "active-info",
-        owner: result.owner,
-        title: result.title,
+        active: targetString,
       });
     }
   } catch (e) {
