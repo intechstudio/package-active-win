@@ -30,6 +30,11 @@
         regExCheckbox.checked = data.useRegEx;
         defaultPageSelector.value = String(data.defaultPage);
 
+        const selectedRadioButton = Array.prototype.slice
+          .call(radioButtons)
+          .find((e) => e.value === data.listenOption);
+        selectedRadioButton.checked = true;
+
         if (regExCheckbox.checked) {
           checkRegExSyntax(pageActivator0);
           checkRegExSyntax(pageActivator1);
@@ -41,11 +46,11 @@
           "Electron",
           "Grid Editor (Nightly)",
           "Grid Editor",
+          "Editor",
         ];
-        if (!editorNames.includes(data.owner.name)) {
-          activeWindow.innerText = data.owner.name;
+        if (!editorNames.map((e) => data.active.includes(e)).includes(true)) {
+          activeWindow.innerText = data.active;
         }
-        //activeTitle.innerText = data.title
       }
     };
     messagePort.start();
@@ -65,6 +70,12 @@
         pageActivatorCriteria3: pageActivator3.value,
         useRegEx: regExCheckbox.checked,
         defaultPage: Number(defaultPageSelector.value),
+        listenOption: Array.prototype.slice
+          .call(radioButtons)
+          .map((e) => {
+            return { value: e.value, checked: e.checked };
+          })
+          .find((e) => e.checked).value,
       });
     }
     intervalSlider.addEventListener("change", updateConfiguration);
@@ -78,6 +89,15 @@
     pageActivator3.addEventListener("input", handleActivatorInput);
     regExCheckbox.addEventListener("change", handleRegexChecked);
     defaultPageSelector.addEventListener("change", handleDefaultPageChange);
+
+    const radioButtons = document.querySelectorAll('input[name="listening"]');
+    for (const obj of radioButtons) {
+      obj.addEventListener("change", handleListenerTypeChange);
+    }
+
+    function handleListenerTypeChange(e) {
+      updateConfiguration();
+    }
 
     function handleDefaultPageChange(e) {
       updateConfiguration();
@@ -273,6 +293,25 @@
           >
             Apply
           </button>
+        </div>
+      </div>
+      <div class="flex flex-row">
+        <span class="mr-8">Listen on:</span>
+        <div class="flex flex-row gap-4">
+          <div class="flex flex-row gap-2">
+            <div class="flex flex-row gap-2">
+              <input
+                type="radio"
+                id="app-name"
+                name="listening"
+                value="0"
+                checked
+              />
+              <label for="1">Application Name</label><br />
+            </div>
+            <input type="radio" id="title-text" name="listening" value="1" />
+            <label for="0">Title Text</label><br />
+          </div>
         </div>
       </div>
       <div class="flex flew-row gap-2">
