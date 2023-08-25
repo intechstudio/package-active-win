@@ -29,12 +29,12 @@
         pageActivator3.value = data.pageActivatorCriteria3;
         regExCheckbox.checked = data.useRegEx;
         defaultPageSelector.value = String(data.defaultPage);
+        activeWindow.innerText = data.lastPageActivator;
 
         const selectedRadioButton = Array.prototype.slice
           .call(radioButtons)
           .find((e) => e.value === data.listenOption);
         selectedRadioButton.checked = true;
-        console.log(selectedRadioButton);
 
         if (regExCheckbox.checked) {
           checkRegExSyntax(pageActivator0);
@@ -43,15 +43,7 @@
           checkRegExSyntax(pageActivator3);
         }
       } else if (data.type === "active-info") {
-        const editorNames = [
-          "Electron",
-          "Grid Editor (Nightly)",
-          "Grid Editor",
-          "Editor",
-        ];
-        if (!editorNames.map((e) => data.active.includes(e)).includes(true)) {
-          activeWindow.innerText = data.active;
-        }
+        activeWindow.innerText = data.active;
       }
     };
     messagePort.start();
