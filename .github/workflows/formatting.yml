@@ -33,10 +33,3 @@ jobs:
             cat format_error.txt
             exit 1
           fi
-
-      - uses: tsickert/discord-webhook@v4.0.0
-        if: ${{ failure() }}
-        with:
-          webhook-url: ${{ secrets.DISCORD_DEV_WEBHOOK }}
-          content: "Format error in the following files!"
-          filename: "format_error.txt"
