@@ -63,6 +63,7 @@ async function onMessage(port, data) {
       useRegEx,
       defaultPage,
       listenOption,
+      lastPageActivator,
     });
   } else if (data.type === "save-configuration") {
     cancelLoop();
