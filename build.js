@@ -1,7 +1,7 @@
 const fs = require("fs");
 const archiver = require("archiver");
 const modules = fs.readdirSync("node_modules");
-const output = fs.createWriteStream("plugin-active-win.zip");
+const output = fs.createWriteStream("package-active-win.zip");
 const archive = archiver("zip", { zlib: { level: 9 } });
 
 const subfolder = "my-project-files";

@@ -1,5 +1,5 @@
 {
-  "name": "plugin_active_win",
+  "name": "package_active_win",
   "version": "1.0.0",
   "description": "Active Window",
   "main": "index.js",

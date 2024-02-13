@@ -15,7 +15,7 @@ let listenOption = 0;
 
 let messagePorts = new Set();
 
-exports.loadPlugin = async function (gridController, persistedData) {
+exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
   interval = persistedData?.interval ?? 1000;
   pageActivatorCriteria0 = persistedData?.pageActivatorCriteria0 ?? "";
@@ -32,7 +32,7 @@ exports.loadPlugin = async function (gridController, persistedData) {
   return true;
 };
 
-exports.unloadPlugin = async function () {
+exports.unloadPackage = async function () {
   controller = undefined;
   messagePorts.forEach((port) => port.close());
   messagePorts.clear();
