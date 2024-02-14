@@ -17,7 +17,7 @@
     const errorLabel = document.getElementById("error-label");
     const noteLabel = document.getElementById("note-label");
 
-    const messagePort = createPluginMessagePort("plugin-active-win");
+    const messagePort = createPackageMessagePort("package-active-win");
     messagePort.onmessage = (e) => {
       const data = e.data;
       if (data.type === "configuration") {
@@ -189,7 +189,7 @@
 
 <div class="p-4 bg-secondary rounded-lg flex flex-col">
   <div class="font-bold w-full border-b border-white pb-2 mb-2">
-    Active Window Plugin
+    Active Window Package
   </div>
   <div class="flex flex-col gap-2">
     <div class="flex flex-row gap-2 w-full text-white items-center">

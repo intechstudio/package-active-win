@@ -69,8 +69,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-github-release.outputs.upload_url }}
-          asset_path: plugin-active-win.zip
-          asset_name: plugin-active-win-${{ matrix.os }}.zip
+          asset_path: package-active-win.zip
+          asset_name: package-active-win-${{ matrix.os }}.zip
           asset_content_type: application/zip
   publish-release:
     needs: [build, create-github-release]
