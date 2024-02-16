@@ -34,7 +34,11 @@
         const selectedRadioButton = Array.prototype.slice
           .call(radioButtons)
           .find((e) => e.value === data.listenOption);
-        selectedRadioButton.checked = true;
+        if (selectedRadioButton) {
+          selectedRadioButton.checked = true;
+        } else {
+          radioButtons[0].selected = true
+        }
 
         if (regExCheckbox.checked) {
           checkRegExSyntax(pageActivator0);
