@@ -26,9 +26,6 @@ jobs:
       upload_url: ${{ steps.save_output.outputs.upload_url  }}
       release_id: ${{ steps.save_output.outputs.release_id  }}
     steps:
-      - name: Use package.json values in future steps
-        run: |
-          echo "Version: ${{ needs.read-package-json.outputs.package_version }}"
       - name: Delete all releases
         uses: larryjoelane/delete-release-action@v1.0.24
         with:
@@ -43,7 +40,7 @@ jobs:
           tag_name: ${{ needs.read-package-json.outputs.package_version}}
           release_name: Release ${{ needs.read-package-json.outputs.package_version}}
           body: |
-            Test release.
+            Release of the Active Window Package for the Grid Editor
           draft: false
           prerelease: false
       - name: Save release output
