@@ -17,7 +17,7 @@ jobs:
       - name: Read package.json
         id: save_output
         run: |
-          echo "name=version::$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
+          echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
         
   create-github-release:
     needs: [read-package-json]
