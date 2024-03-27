@@ -1,6 +1,6 @@
 {
   "name": "package_active_win",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Active Window",
   "main": "index.js",
   "scripts": {
