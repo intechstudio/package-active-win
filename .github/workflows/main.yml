@@ -26,10 +26,13 @@ jobs:
       upload_url: ${{ steps.save_output.outputs.upload_url  }}
       release_id: ${{ steps.save_output.outputs.release_id  }}
     steps:
+      - name: Use package.json values in future steps
+        run: |
+          echo "Version: ${{ needs.read-package-json.outputs.package_version }}"
       - name: Delete all releases
         uses: larryjoelane/delete-release-action@v1.0.24
         with:
-          release-name: ${{ needs.read-package-json.outputs.package_version}}
+          release-name: ${{ needs.read-package-json.outputs.package_version  }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: create_release
