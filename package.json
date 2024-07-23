@@ -13,6 +13,7 @@
     "archiver": "^5.3.1"
   },
   "grid_editor": {
-    "preference": "preference.html"
+    "componentsPath": "components/dist/components.js",
+    "preferenceComponent": "active-win-preference"
   }
 }

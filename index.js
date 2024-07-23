@@ -93,8 +93,8 @@ async function onMessage(port, data) {
       listenOption: listenOption,
     };
 
-    controller.sendMessageToRuntime({
-      id: "persist-data",
+    controller.sendMessageToEditor({
+      type: "persist-data",
       data: payload,
     });
 
@@ -166,8 +166,8 @@ async function checkActiveWindow() {
     }
 
     if (typeof page !== "undefined") {
-      controller.sendMessageToRuntime({
-        id: "change-page",
+      controller.sendMessageToEditor({
+        type: "change-page",
         num: page,
       });
     }
@@ -180,7 +180,7 @@ async function checkActiveWindow() {
     }
   } catch (e) {
     console.error("error:", e);
-    controller.sendMessageToRuntime({
+    controller.sendMessageToEditor({
       error: e.message,
     });
   }

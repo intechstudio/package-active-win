@@ -68,6 +68,12 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Build components
+        run: | 
+          cd components
+          npm install
+          npm run build
         
       - name: Install archiver package
         run: npm install archiver

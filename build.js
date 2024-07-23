@@ -1,7 +1,7 @@
 const fs = require("fs");
 const archiver = require("archiver");
 const modules = fs.readdirSync("node_modules");
-const output = fs.createWriteStream("package-active-win.zip");
+const output = fs.createWriteStream("package-archive.zip");
 const archive = archiver("zip", { zlib: { level: 9 } });
 
 const subfolder = "my-project-files";
@@ -9,7 +9,14 @@ if (!fs.existsSync(subfolder)) {
   fs.mkdirSync(subfolder);
 }
 
-const excludedFiles = [subfolder, "archive.js", "build.js", ".github", ".git"];
+const excludedFiles = [
+  subfolder,
+  "components",
+  "archive.js",
+  "build.js",
+  ".github",
+  ".git",
+];
 
 // Get all files and directories in the current folder
 const files = fs.readdirSync(".");
@@ -19,6 +26,10 @@ for (const file of files) {
     fs.renameSync(file, `${subfolder}/${file}`);
   }
 }
+
+//Copy components dist folder
+fs.mkdirSync(`${subfolder}/components`);
+fs.renameSync("components/dist", `${subfolder}/components/dist`);
 
 output.on("close", () => {
   console.log("Archive created successfully.");
