@@ -1,6 +1,5 @@
-const activeWindow = require("active-win");
+const { ActiveWindow } = require("@paymoapp/active-window");
 
-let interval = 1000;
 let pageActivatorCriteria0 = "";
 let pageActivatorCriteria1 = "";
 let pageActivatorCriteria2 = "";
@@ -8,8 +7,6 @@ let pageActivatorCriteria3 = "";
 let useRegEx = false;
 let defaultPage = -1;
 let lastPageActivator = "";
-let isEnabled = false;
-let currentTimeoutId = undefined;
 let controller = undefined;
 let listenOption = 0;
 
@@ -17,7 +14,6 @@ let messagePorts = new Set();
 
 exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
-  interval = persistedData?.interval ?? 1000;
   pageActivatorCriteria0 = persistedData?.pageActivatorCriteria0 ?? "";
   pageActivatorCriteria1 = persistedData?.pageActivatorCriteria1 ?? "";
   pageActivatorCriteria2 = persistedData?.pageActivatorCriteria2 ?? "";
@@ -27,7 +23,11 @@ exports.loadPackage = async function (gridController, persistedData) {
   listenOption = persistedData?.listenOption ?? 0;
 
   isEnabled = true;
-  runLoop();
+
+  if (ActiveWindow.requestPermissions()) {
+    activeWindowSubscribeId = ActiveWindow.subscribe(checkActiveWindow);
+    checkActiveWindow(ActiveWindow.getActiveWindow());
+  }
 
   return true;
 };
@@ -36,7 +36,7 @@ exports.unloadPackage = async function () {
   controller = undefined;
   messagePorts.forEach((port) => port.close());
   messagePorts.clear();
-  cancelLoop();
+  ActiveWindow.unsubscribe(activeWindowSubscribeId);
 };
 
 exports.addMessagePort = async function (port) {
@@ -55,7 +55,6 @@ async function onMessage(port, data) {
   if (data.type === "request-configuration") {
     port.postMessage({
       type: "configuration",
-      interval,
       pageActivatorCriteria0,
       pageActivatorCriteria1,
       pageActivatorCriteria2,
@@ -66,9 +65,8 @@ async function onMessage(port, data) {
       lastPageActivator,
     });
   } else if (data.type === "save-configuration") {
-    cancelLoop();
+    //cancelLoop();
 
-    interval = data.interval ?? interval;
     pageActivatorCriteria0 =
       data.pageActivatorCriteria0 ?? pageActivatorCriteria0;
     pageActivatorCriteria1 =
@@ -83,7 +81,6 @@ async function onMessage(port, data) {
     isEnabled = true;
 
     const payload = {
-      interval,
       pageActivatorCriteria0,
       pageActivatorCriteria1,
       pageActivatorCriteria2,
@@ -98,27 +95,18 @@ async function onMessage(port, data) {
       data: payload,
     });
 
-    await runLoop();
+    //await runLoop();
   }
 }
 
-async function runLoop() {
-  if (!isEnabled) return;
-
-  await checkActiveWindow();
-
-  currentTimeoutId = setTimeout(runLoop, Math.max(interval ?? 0, 100));
-}
-
-async function checkActiveWindow() {
+async function checkActiveWindow(result) {
+  console.log({ result });
   try {
-    let result = await activeWindow();
-
     if (result === undefined) {
       result = { owner: { name: "Unknown!" }, title: "Invalid title!" };
     }
 
-    const [owner, title] = [result.owner.name, result.title];
+    const [owner, title] = [result.application, result.title];
     const targetString = Number(listenOption) === 1 ? title : owner;
 
     if (lastPageActivator === targetString) {
@@ -184,9 +172,4 @@ async function checkActiveWindow() {
       error: e.message,
     });
   }
-}
-
-function cancelLoop() {
-  isEnabled = false;
-  clearTimeout(currentTimeoutId);
 }

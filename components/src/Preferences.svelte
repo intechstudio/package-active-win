@@ -1,23 +1,44 @@
-<svelte:options customElement={{tag: 'active-win-preference', shadow: 'none'}} />
-<script>
-    import { Block, BlockBody, BlockRow, BlockTitle, MoltenButton, MoltenInput } from "@intechstudio/grid-uikit";
-    import { onMount } from "svelte";
+<svelte:options
+  customElement={{ tag: "active-win-preference", shadow: "none" }}
+/>
 
-  let timeSliderValue = 1000;
+<script>
+  import {
+    Block,
+    BlockBody,
+    BlockRow,
+    BlockTitle,
+    MoltenButton,
+    MoltenInput,
+  } from "@intechstudio/grid-uikit";
+  import { onMount } from "svelte";
+
   let activeWindow = "N/A";
-  let pageActivator0 = '';
-  let pageActivator1 = '';
-  let pageActivator2 = '';
-  let pageActivator3 = '';
+  let pageActivator0 = "";
+  let pageActivator1 = "";
+  let pageActivator2 = "";
+  let pageActivator3 = "";
   let useRegEx = false;
   let defaultPageNumber = "-1";
   let listenOption = "0";
 
   let hasBeenInitialized = false;
 
-  $: activatorsCorrect = [pageActivator0, pageActivator1, pageActivator2, pageActivator3].map(checkActivatorSyntax);
+  $: activatorsCorrect = [
+    pageActivator0,
+    pageActivator1,
+    pageActivator2,
+    pageActivator3,
+  ].map(checkActivatorSyntax);
 
-  $: pageActivator0, pageActivator1, pageActivator2, pageActivator3, useRegEx, listenOption, defaultPageNumber, timeSliderValue, updateConfiguration()
+  $: pageActivator0,
+    pageActivator1,
+    pageActivator2,
+    pageActivator3,
+    useRegEx,
+    listenOption,
+    defaultPageNumber,
+    updateConfiguration();
 
   // @ts-ignore
   const messagePort = createPackageMessagePort("package-active-win");
@@ -27,7 +48,6 @@
       const data = e.data;
       if (data.type === "configuration") {
         hasBeenInitialized = true;
-        timeSliderValue = data.interval;
         useRegEx = data.useRegEx;
         pageActivator0 = data.pageActivatorCriteria0;
         pageActivator1 = data.pageActivatorCriteria1;
@@ -46,11 +66,11 @@
     });
     return () => {
       messagePort.close();
-    }
-  })
+    };
+  });
 
-  function checkActivatorSyntax(input){
-    if (!useRegEx){
+  function checkActivatorSyntax(input) {
+    if (!useRegEx) {
       return true;
     }
 
@@ -64,10 +84,9 @@
 
   function updateConfiguration(e) {
     if (!hasBeenInitialized) return;
-    
+
     messagePort.postMessage({
       type: "save-configuration",
-      interval: Number(timeSliderValue),
       pageActivatorCriteria0: pageActivator0,
       pageActivatorCriteria1: pageActivator1,
       pageActivatorCriteria2: pageActivator2,
@@ -82,47 +101,77 @@
 <main-app>
   <div class="px-4">
     <Block>
-      <BlockTitle> Active Window Package </BlockTitle>
-      <BlockBody>Poll interval</BlockBody>
-      <div class="flex flex-row gap-2 w-full text-white items-center">
-        <input
-          class="flex flex-grow bg-primary"
-          type="range"
-          min="200"
-          max="2000"
-          step="50"
-          bind:value={timeSliderValue}
-        />
-        <div style="width: 50px">
-          {timeSliderValue} ms
-        </div>
-      </div>
+      <BlockTitle>Active Window Package</BlockTitle>
       <BlockBody>
         <div class="flex flex-row text-gray-400 text-sm">
           <b>Active window:</b>
           <div>{activeWindow}</div>
-        </div>  
+        </div>
       </BlockBody>
       <div class="flex flex-col w-full gap-2">
-        <div class="flex flex-row gap-2 text-white {activatorsCorrect[0] ? 'border-transparent' : 'border-error error'}">
-          <span id="input-label-1" class="flex items-center" style="white-space:nowrap">Page 1:</span>
-          <MoltenInput bind:target={pageActivator0}/>
-          <MoltenButton title={"Apply"} click={() => pageActivator0 = activeWindow} />
+        <div
+          class="flex flex-row gap-2 text-white {activatorsCorrect[0]
+            ? 'border-transparent'
+            : 'border-error error'}"
+        >
+          <span
+            id="input-label-1"
+            class="flex items-center"
+            style="white-space:nowrap">Page 1:</span
+          >
+          <MoltenInput bind:target={pageActivator0} />
+          <MoltenButton
+            title={"Apply"}
+            click={() => (pageActivator0 = activeWindow)}
+          />
         </div>
-        <div class="flex flex-row gap-2 text-white {activatorsCorrect[1] ? 'border-transparent' : 'border-error error'}">
-          <span id="input-label-1" class="flex items-center" style="white-space:nowrap">Page 2:</span>
-          <MoltenInput bind:target={pageActivator1}/>
-          <MoltenButton title={"Apply"} click={() => pageActivator1 = activeWindow} />
+        <div
+          class="flex flex-row gap-2 text-white {activatorsCorrect[1]
+            ? 'border-transparent'
+            : 'border-error error'}"
+        >
+          <span
+            id="input-label-1"
+            class="flex items-center"
+            style="white-space:nowrap">Page 2:</span
+          >
+          <MoltenInput bind:target={pageActivator1} />
+          <MoltenButton
+            title={"Apply"}
+            click={() => (pageActivator1 = activeWindow)}
+          />
         </div>
-        <div class="flex flex-row gap-2 text-white {activatorsCorrect[2] ? 'border-transparent' : 'border-error error'}">
-          <span id="input-label-1" class="flex items-center" style="white-space:nowrap">Page 3:</span>
-          <MoltenInput bind:target={pageActivator2}/>
-          <MoltenButton title={"Apply"} click={() => pageActivator2 = activeWindow} />
+        <div
+          class="flex flex-row gap-2 text-white {activatorsCorrect[2]
+            ? 'border-transparent'
+            : 'border-error error'}"
+        >
+          <span
+            id="input-label-1"
+            class="flex items-center"
+            style="white-space:nowrap">Page 3:</span
+          >
+          <MoltenInput bind:target={pageActivator2} />
+          <MoltenButton
+            title={"Apply"}
+            click={() => (pageActivator2 = activeWindow)}
+          />
         </div>
-        <div class="flex flex-row gap-2 text-white {activatorsCorrect[3] ? 'border-transparent' : 'border-error error'}">
-          <span id="input-label-1" class="flex items-center" style="white-space:nowrap">Page 4:</span>
-          <MoltenInput bind:target={pageActivator3}/>
-          <MoltenButton title={"Apply"} click={() => pageActivator3 = activeWindow} />
+        <div
+          class="flex flex-row gap-2 text-white {activatorsCorrect[3]
+            ? 'border-transparent'
+            : 'border-error error'}"
+        >
+          <span
+            id="input-label-1"
+            class="flex items-center"
+            style="white-space:nowrap">Page 4:</span
+          >
+          <MoltenInput bind:target={pageActivator3} />
+          <MoltenButton
+            title={"Apply"}
+            click={() => (pageActivator3 = activeWindow)}
+          />
         </div>
         <div class="flex flex-row">
           <span class="mr-6">Listen on:</span>
@@ -138,7 +187,12 @@
                 />
                 <label for="1">Application Name</label><br />
               </div>
-              <input type="radio" name="listening" value="1" bind:group={listenOption} />
+              <input
+                type="radio"
+                name="listening"
+                value="1"
+                bind:group={listenOption}
+              />
               <label for="0">Title Text</label><br />
             </div>
           </div>
@@ -162,12 +216,20 @@
               <option value="3">Page 4</option>
             </select>
           </div>
-  
-          <span id="note-label" class="text-sm text-gray-400 {activatorsCorrect.every((e) => e) ? '' : 'hidden'}"
+
+          <span
+            id="note-label"
+            class="text-sm text-gray-400 {activatorsCorrect.every((e) => e)
+              ? ''
+              : 'hidden'}"
             >NOTE: When no match is found for active window, the page defined by
             the default behviour will be selected</span
           >
-          <span id="error-label" class="text-sm text-error hidden {activatorsCorrect.every((e) => e) ? 'hidden' : ''}"
+          <span
+            id="error-label"
+            class="text-sm text-error hidden {activatorsCorrect.every((e) => e)
+              ? 'hidden'
+              : ''}"
             >ERROR: Invalid regular expression syntax!
           </span>
         </div>
@@ -175,6 +237,7 @@
     </Block>
   </div>
 </main-app>
+
 <style>
   :root {
     --error-color: rgb(239 68 68);

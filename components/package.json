@@ -4,8 +4,8 @@
   "version": "0.0.3",
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
+    "dev": "vite build --watch",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -15,6 +15,7 @@
     "vite": "^5.3.1"
   },
   "dependencies": {
-    "@intechstudio/grid-uikit": "^1.20240722.817"
+    "@intechstudio/grid-uikit": "^1.20240722.817",
+    "ws": "^8.18.0"
   }
 }
