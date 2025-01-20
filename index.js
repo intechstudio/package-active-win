@@ -1,26 +1,21 @@
 const { ActiveWindow } = require("@paymoapp/active-window");
 
-let pageActivatorCriteria0 = "";
-let pageActivatorCriteria1 = "";
-let pageActivatorCriteria2 = "";
-let pageActivatorCriteria3 = "";
+let pageActivators = ["", "", "", ""];
 let useRegEx = false;
 let defaultPage = -1;
 let lastPageActivator = "";
 let controller = undefined;
-let listenOption = 0;
+let listenOption = "name";
 
 let messagePorts = new Set();
 
 exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
-  pageActivatorCriteria0 = persistedData?.pageActivatorCriteria0 ?? "";
-  pageActivatorCriteria1 = persistedData?.pageActivatorCriteria1 ?? "";
-  pageActivatorCriteria2 = persistedData?.pageActivatorCriteria2 ?? "";
-  pageActivatorCriteria3 = persistedData?.pageActivatorCriteria3 ?? "";
+  pageActivators = persistedData?.pageActivators ?? pageActivators;
   useRegEx = persistedData?.useRegEx ?? false;
   defaultPage = persistedData?.defaultPage ?? -1;
-  listenOption = persistedData?.listenOption ?? 0;
+  listenOption = persistedData?.listenOption ?? "name";
+  console.log(JSON.stringify(pageActivators));
 
   isEnabled = true;
 
@@ -55,10 +50,7 @@ async function onMessage(port, data) {
   if (data.type === "request-configuration") {
     port.postMessage({
       type: "configuration",
-      pageActivatorCriteria0,
-      pageActivatorCriteria1,
-      pageActivatorCriteria2,
-      pageActivatorCriteria3,
+      pageActivators,
       useRegEx,
       defaultPage,
       listenOption,
@@ -67,27 +59,17 @@ async function onMessage(port, data) {
   } else if (data.type === "save-configuration") {
     //cancelLoop();
 
-    pageActivatorCriteria0 =
-      data.pageActivatorCriteria0 ?? pageActivatorCriteria0;
-    pageActivatorCriteria1 =
-      data.pageActivatorCriteria1 ?? pageActivatorCriteria1;
-    pageActivatorCriteria2 =
-      data.pageActivatorCriteria2 ?? pageActivatorCriteria2;
-    pageActivatorCriteria3 =
-      data.pageActivatorCriteria3 ?? pageActivatorCriteria3;
+    pageActivators = data.pageActivators ?? pageActivators;
     useRegEx = data.useRegEx ?? useRegEx;
     defaultPage = data.defaultPage ?? defaultPage;
     listenOption = data.listenOption ?? listenOption;
     isEnabled = true;
 
     const payload = {
-      pageActivatorCriteria0,
-      pageActivatorCriteria1,
-      pageActivatorCriteria2,
-      pageActivatorCriteria3,
-      useRegEx: useRegEx,
-      defaultPage: defaultPage,
-      listenOption: listenOption,
+      pageActivators,
+      useRegEx,
+      defaultPage,
+      listenOption,
     };
 
     controller.sendMessageToEditor({
@@ -100,14 +82,13 @@ async function onMessage(port, data) {
 }
 
 async function checkActiveWindow(result) {
-  console.log({ result });
   try {
     if (result === undefined) {
       result = { owner: { name: "Unknown!" }, title: "Invalid title!" };
     }
 
     const [owner, title] = [result.application, result.title];
-    const targetString = Number(listenOption) === 1 ? title : owner;
+    const targetString = listenOption === "title" ? title : owner;
 
     if (lastPageActivator === targetString) {
       return;
@@ -115,30 +96,23 @@ async function checkActiveWindow(result) {
 
     lastPageActivator = targetString;
 
-    let criteria = [
-      pageActivatorCriteria0,
-      pageActivatorCriteria1,
-      pageActivatorCriteria2,
-      pageActivatorCriteria3,
-    ];
-
     let page = undefined;
     for (let i = 0; i < 4; i++) {
-      if (criteria[i].length === 0) {
+      if ((pageActivators[i]?.length ?? 0) === 0) {
         continue;
       }
 
       let matchFound = false;
       if (useRegEx) {
         try {
-          const regex = new RegExp(criteria[i]);
+          const regex = new RegExp(pageActivators[i]);
           const regexMatch = regex.test(targetString);
           matchFound = regexMatch;
         } catch (e) {
           continue; //Regex syntax error in criteria[i], skip
         }
       } else {
-        const normalMatch = criteria[i] === targetString;
+        const normalMatch = pageActivators[i] === targetString;
         matchFound = normalMatch;
       }
 

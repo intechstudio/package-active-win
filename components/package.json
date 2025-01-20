@@ -12,10 +12,11 @@
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "svelte": "^4.2.18",
     "svelte-preprocess": "^6.0.1",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@intechstudio/grid-uikit": "^1.20240722.817",
+    "@intechstudio/grid-uikit": "^1.20250117.1314",
     "ws": "^8.18.0"
   }
 }
