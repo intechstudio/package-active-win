@@ -134,9 +134,9 @@
           bind:value={defaultPageNumber}
           suggestions={[
             { info: "Do not change page", value: "-1" },
-            ...Array(4).map((_, i) => {
+            ...(Array(4).fill().map((_, i) => {
               return { info: `Page ${i + 1}`, value: `${i}` };
-            }),
+            })),
           ]}
         />
 
