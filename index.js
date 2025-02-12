@@ -18,7 +18,7 @@ exports.loadPackage = async function (gridController, persistedData) {
   listenOption = persistedData?.listenOption ?? "name";
   listenToSelf = persistedData?.listenToSelf ?? false;
 
-  ActiveWindow.initialize({osxRunLoop: 'all'});
+  ActiveWindow.initialize({ osxRunLoop: "all" });
 
   isEnabled = true;
 
@@ -75,7 +75,7 @@ async function onMessage(port, data) {
       useRegEx,
       defaultPage,
       listenOption,
-      listenToSelf
+      listenToSelf,
     };
 
     controller.sendMessageToEditor({
@@ -89,7 +89,6 @@ async function onMessage(port, data) {
 
 async function checkActiveWindow(result) {
   try {
-    
     if (result === undefined) {
       result = { owner: { name: "Unknown!" }, title: "Invalid title!" };
     }
@@ -142,7 +141,7 @@ async function checkActiveWindow(result) {
     }
 
     // When the active window is the editor itself, we don't want to send the active-info message to the editor
-    if(listenToSelf === false && title.includes("Editor")){
+    if (listenToSelf === false && title.includes("Editor")) {
       return;
     }
 
@@ -152,7 +151,6 @@ async function checkActiveWindow(result) {
         active: targetString,
       });
     }
-
   } catch (e) {
     console.error("error:", e);
     controller.sendMessageToEditor({
