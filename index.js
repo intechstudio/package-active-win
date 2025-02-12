@@ -6,6 +6,7 @@ let defaultPage = -1;
 let lastPageActivator = "";
 let controller = undefined;
 let listenOption = "name";
+let listenToSelf = false;
 
 let messagePorts = new Set();
 
@@ -15,7 +16,9 @@ exports.loadPackage = async function (gridController, persistedData) {
   useRegEx = persistedData?.useRegEx ?? false;
   defaultPage = persistedData?.defaultPage ?? -1;
   listenOption = persistedData?.listenOption ?? "name";
-  console.log(JSON.stringify(pageActivators));
+  listenToSelf = persistedData?.listenToSelf ?? false;
+
+  ActiveWindow.initialize({osxRunLoop: 'all'});
 
   isEnabled = true;
 
@@ -54,6 +57,7 @@ async function onMessage(port, data) {
       useRegEx,
       defaultPage,
       listenOption,
+      listenToSelf,
       lastPageActivator,
     });
   } else if (data.type === "save-configuration") {
@@ -63,6 +67,7 @@ async function onMessage(port, data) {
     useRegEx = data.useRegEx ?? useRegEx;
     defaultPage = data.defaultPage ?? defaultPage;
     listenOption = data.listenOption ?? listenOption;
+    listenToSelf = data.listenToSelf ?? listenToSelf;
     isEnabled = true;
 
     const payload = {
@@ -70,6 +75,7 @@ async function onMessage(port, data) {
       useRegEx,
       defaultPage,
       listenOption,
+      listenToSelf
     };
 
     controller.sendMessageToEditor({
@@ -83,6 +89,7 @@ async function onMessage(port, data) {
 
 async function checkActiveWindow(result) {
   try {
+    
     if (result === undefined) {
       result = { owner: { name: "Unknown!" }, title: "Invalid title!" };
     }
@@ -134,12 +141,18 @@ async function checkActiveWindow(result) {
       });
     }
 
+    // When the active window is the editor itself, we don't want to send the active-info message to the editor
+    if(listenToSelf === false && title.includes("Editor")){
+      return;
+    }
+
     for (const port of messagePorts) {
       port.postMessage({
         type: "active-info",
         active: targetString,
       });
     }
+
   } catch (e) {
     console.error("error:", e);
     controller.sendMessageToEditor({
