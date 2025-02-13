@@ -19,6 +19,7 @@
   let useRegEx = false;
   let defaultPageNumber = "-1";
   let listenOption = "name";
+  let listenToSelf = false;
 
   let hasBeenInitialized = false;
 
@@ -30,6 +31,7 @@
     useRegEx,
     listenOption,
     defaultPageNumber,
+    listenToSelf,
     updateConfiguration();
 
   // @ts-ignore
@@ -45,6 +47,7 @@
         defaultPageNumber = String(data.defaultPage);
         activeWindow = String(data.lastPageActivator);
         listenOption = data.listenOption;
+        listenToSelf = data.listenToSelf;
       } else if (data.type === "active-info") {
         activeWindow = data.active;
       }
@@ -79,7 +82,8 @@
       pageActivators,
       useRegEx,
       defaultPage: Number(defaultPageNumber),
-      listenOption: listenOption,
+      listenOption,
+      listenToSelf
     });
   }
 </script>
@@ -126,6 +130,11 @@
         <MeltCheckbox
           title={"Use Regular Expressions"}
           bind:target={useRegEx}
+          style="none"
+        />
+        <MeltCheckbox
+          title={"Listen to Editor focus for Active window info"}
+          bind:target={listenToSelf}
           style="none"
         />
         <MeltCombo
