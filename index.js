@@ -141,7 +141,13 @@ async function checkActiveWindow(result) {
     }
 
     // When the active window is the editor itself, we don't want to send the active-info message to the editor
-    if (listenToSelf === false && title.includes("Editor")) {
+    console.log({ title, targetString });
+    if (
+      listenToSelf === false &&
+      (title.includes("Grid Editor") ||
+        title.includes("Electron") ||
+        title == "Editor")
+    ) {
       return;
     }
 
