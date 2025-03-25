@@ -17,6 +17,7 @@
 
   let activeWindow = "N/A";
   let useRegEx = false;
+  let useCallbackHook = false;
   let defaultPageNumber = "-1";
   let listenOption = "name";
   let listenToSelf = false;
@@ -32,6 +33,7 @@
     listenOption,
     defaultPageNumber,
     listenToSelf,
+    useCallbackHook,
     updateConfiguration();
 
   // @ts-ignore
@@ -48,6 +50,7 @@
         activeWindow = String(data.lastPageActivator);
         listenOption = data.listenOption;
         listenToSelf = data.listenToSelf;
+        useCallbackHook = data.useCallbackHook;
       } else if (data.type === "active-info") {
         activeWindow = data.active;
       }
@@ -83,7 +86,8 @@
       useRegEx,
       defaultPage: Number(defaultPageNumber),
       listenOption,
-      listenToSelf
+      listenToSelf,
+      useCallbackHook,
     });
   }
 </script>
@@ -98,71 +102,80 @@
           <div>{activeWindow}</div>
         </div>
       </BlockBody>
-      <div class="flex flex-col w-full gap-2">
-        {#each Array(4) as _, i}
-          <div
-            class="flex flex-row gap-2 text-white {activatorsCorrect[i]
-              ? 'border-transparent'
-              : 'border-error error'}"
-          >
-            <span class="flex items-center" style="white-space:nowrap"
-              >Page {i + 1}:</span
+      <BlockBody>
+        <MeltCheckbox
+          title={"Use Callback hooks instead of page change"}
+          bind:target={useCallbackHook}
+          style="none"
+        />
+      </BlockBody>
+      {#if !useCallbackHook}
+        <div class="flex flex-col w-full gap-2">
+          {#each Array(4) as _, i}
+            <div
+              class="flex flex-row gap-2 text-white {activatorsCorrect[i]
+                ? 'border-transparent'
+                : 'border-error error'}"
             >
-            <MoltenInput bind:target={pageActivators[i]} />
-            <MoltenButton
-              title={"Apply"}
-              click={() => {
-                pageActivators[i] = activeWindow;
-              }}
-            />
-          </div>
-        {/each}
+              <span class="flex items-center" style="white-space:nowrap"
+                >Page {i + 1}:</span
+              >
+              <MoltenInput bind:target={pageActivators[i]} />
+              <MoltenButton
+                title={"Apply"}
+                click={() => {
+                  pageActivators[i] = activeWindow;
+                }}
+              />
+            </div>
+          {/each}
 
-        <MeltCombo
-          size="full"
-          title="Listen on"
-          bind:value={listenOption}
-          suggestions={[
-            { info: "Application Name", value: "name" },
-            { info: "Title Text", value: "title" },
-          ]}
-        />
-        <MeltCheckbox
-          title={"Use Regular Expressions"}
-          bind:target={useRegEx}
-          style="none"
-        />
-        <MeltCheckbox
-          title={"Listen to Editor focus for Active window info"}
-          bind:target={listenToSelf}
-          style="none"
-        />
-        <MeltCombo
-          size="full"
-          title="Default page"
-          bind:value={defaultPageNumber}
-          suggestions={[
-            { info: "Do not change page", value: "-1" },
-            ...(Array(4).fill().map((_, i) => {
-              return { info: `Page ${i + 1}`, value: `${i}` };
-            })),
-          ]}
-        />
+          <MeltCombo
+            size="full"
+            title="Listen on"
+            bind:value={listenOption}
+            suggestions={[
+              { info: "Application Name", value: "name" },
+              { info: "Title Text", value: "title" },
+            ]}
+          />
+          <MeltCheckbox
+            title={"Use Regular Expressions"}
+            bind:target={useRegEx}
+            style="none"
+          />
+          <MeltCheckbox
+            title={"Listen to Editor focus for Active window info"}
+            bind:target={listenToSelf}
+            style="none"
+          />
+          <MeltCombo
+            size="full"
+            title="Default page"
+            bind:value={defaultPageNumber}
+            suggestions={[
+              { info: "Do not change page", value: "-1" },
+              ...(Array(4).fill().map((_, i) => {
+                return { info: `Page ${i + 1}`, value: `${i}` };
+              })),
+            ]}
+          />
 
-        <BlockBody>
-          <span
-            class="text-sm text-gray-400"
-            class:hidden={activatorsCorrect.some((e) => !e)}
-            >NOTE: When no match is found for active window, the page defined by
-            the default behviour will be selected
-          </span>
-          <span
-            class="text-sm text-error"
-            class:hidden={activatorsCorrect.every((e) => e)}
-            >ERROR: Invalid regular expression syntax!
-          </span>
-        </BlockBody>
-      </div>
+          <BlockBody>
+            <span
+              class="text-sm text-gray-400"
+              class:hidden={activatorsCorrect.some((e) => !e)}
+              >NOTE: When no match is found for active window, the page defined by
+              the default behviour will be selected
+            </span>
+            <span
+              class="text-sm text-error"
+              class:hidden={activatorsCorrect.every((e) => e)}
+              >ERROR: Invalid regular expression syntax!
+            </span>
+          </BlockBody>
+        </div>
+      {/if}
     </Block>
   </div>
 </main-app>

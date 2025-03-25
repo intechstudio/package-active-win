@@ -2,6 +2,7 @@ const { ActiveWindow } = require("@paymoapp/active-window");
 
 let pageActivators = ["", "", "", ""];
 let useRegEx = false;
+let useCallbackHook = false;
 let defaultPage = -1;
 let lastPageActivator = "";
 let controller = undefined;
@@ -14,6 +15,7 @@ exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
   pageActivators = persistedData?.pageActivators ?? pageActivators;
   useRegEx = persistedData?.useRegEx ?? false;
+  useCallbackHook = persistedData?.useCallbackHook ?? false;
   defaultPage = persistedData?.defaultPage ?? -1;
   listenOption = persistedData?.listenOption ?? "name";
   listenToSelf = persistedData?.listenToSelf ?? false;
@@ -55,6 +57,7 @@ async function onMessage(port, data) {
       type: "configuration",
       pageActivators,
       useRegEx,
+      useCallbackHook,
       defaultPage,
       listenOption,
       listenToSelf,
@@ -65,6 +68,7 @@ async function onMessage(port, data) {
 
     pageActivators = data.pageActivators ?? pageActivators;
     useRegEx = data.useRegEx ?? useRegEx;
+    useCallbackHook = data.useCallbackHook ?? useCallbackHook;
     defaultPage = data.defaultPage ?? defaultPage;
     listenOption = data.listenOption ?? listenOption;
     listenToSelf = data.listenToSelf ?? listenToSelf;
@@ -73,6 +77,7 @@ async function onMessage(port, data) {
     const payload = {
       pageActivators,
       useRegEx,
+      useCallbackHook,
       defaultPage,
       listenOption,
       listenToSelf,
@@ -101,6 +106,14 @@ async function checkActiveWindow(result) {
     }
 
     lastPageActivator = targetString;
+
+    if (useCallbackHook) {
+      controller.sendMessageToEditor({
+        type: "execute-lua-script",
+        script: `active_window("${targetString}")`,
+      });
+      return;
+    }
 
     let page = undefined;
     for (let i = 0; i < 4; i++) {
