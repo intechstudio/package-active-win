@@ -25,6 +25,9 @@
   },
   "grid_editor": {
     "componentsPath": "components/dist/components.js",
-    "preferenceComponent": "active-win-preference"
+    "preferenceComponent": "active-win-preference",
+    "shortDescription": "Change the active page when switching between windows.",
+    "mainIcon": "active-window.svg",
+    "menuIcon": "active-window.svg"
   }
 }
