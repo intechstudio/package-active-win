@@ -11,6 +11,14 @@ let listenToSelf = false;
 
 let messagePorts = new Set();
 
+let currentActiveWindowResult = {
+  application: "Unknown!",
+  title: "Invalid title!",
+};
+
+let filters = new Map();
+let filtersCurrentValue = new Map();
+
 exports.loadPackage = async function (gridController, persistedData) {
   controller = gridController;
   pageActivators = persistedData?.pageActivators ?? pageActivators;
@@ -49,6 +57,19 @@ exports.addMessagePort = async function (port) {
     messagePorts.delete(port);
   });
   port.start();
+};
+
+exports.sendMessage = async function (message) {
+  if (message.type === "subscribe") {
+    let packageId = message.senderPackageId;
+    filters.set(packageId, { filter: message.filter, target: message.target });
+    filtersCurrentValue.delete(packageId);
+    refreshFilterValues();
+  } else if (message.type === "unsubscribe") {
+    let packageId = message.senderPackageId;
+    filters.delete(packageId);
+    filtersCurrentValue.delete(packageId);
+  }
 };
 
 async function onMessage(port, data) {
@@ -95,8 +116,18 @@ async function onMessage(port, data) {
 async function checkActiveWindow(result) {
   try {
     if (result === undefined) {
-      result = { owner: { name: "Unknown!" }, title: "Invalid title!" };
+      result = { application: "Unknown!", title: "Invalid title!" };
     }
+    if (
+      currentActiveWindowResult.application === result.application &&
+      currentActiveWindowResult.title === result.title
+    ) {
+      return;
+    }
+
+    currentActiveWindowResult = result;
+
+    refreshFilterValues();
 
     const [owner, title] = [result.application, result.title];
     const targetString = listenOption === "title" ? title : owner;
@@ -154,7 +185,6 @@ async function checkActiveWindow(result) {
     }
 
     // When the active window is the editor itself, we don't want to send the active-info message to the editor
-    console.log({ title, targetString });
     if (
       listenToSelf === false &&
       (title.includes("Grid Editor") ||
@@ -176,4 +206,27 @@ async function checkActiveWindow(result) {
       error: e.message,
     });
   }
+}
+
+function refreshFilterValues() {
+  filters.forEach((filterData, packageId) => {
+    let targetString =
+      filterData.target === "application"
+        ? currentActiveWindowResult.application
+        : currentActiveWindowResult.title;
+    let currentValue = targetString.match(filterData.filter) !== null;
+    if (filtersCurrentValue.get(packageId) === currentValue) {
+      return;
+    }
+
+    filtersCurrentValue.set(packageId, currentValue);
+    controller.sendMessageToEditor({
+      type: "send-package-message",
+      targetPackageId: packageId,
+      message: {
+        type: "active-window-status",
+        status: currentValue,
+      },
+    });
+  });
 }
